@@ -84,7 +84,7 @@ RUNSLOOP=$GPU
 
 #####################################################################################################################
  ### For instace one  
-  HS=$(cat /home/bash/$NAMET1 | grep Kernel | awk '{print $9}' | sed 's/[(]//' | tail --lines=2 | head --lines=1 | awk '{printf("%.2f\n", $1)}' )
+  HS=$(cat $NAMET1 | grep Kernel | awk '{print $9}' | sed 's/[(]//' | tail --lines=2 | head --lines=1 | awk '{printf("%.2f\n", $1)}' )
 	NAME=$(echo "Ist$RUNSLOOP.T1")
 	### This is the time of hash vs current date calculator 
 	### Need variables 
@@ -113,7 +113,7 @@ RUNSLOOP=$GPU
 		echo " there is a $DIFF sec lag on hash check - GPU is sick ! " ###  Here we have declared the GPU sick 
 	
 		### ACTION HERE - We have a lag on the miner thread
-		 LINES=$(cat /home/bash/$NAME | wc -l)
+		 LINES=$(cat $NAME | wc -l)
 		
 		 if [ $LINES -gt 150 ] ; then  
 			PID=$(cat $RUNSLOOP.T1PID)
@@ -134,7 +134,7 @@ RUNSLOOP=$GPU
 ############################################################################################################################
 
  ### For instance 2 check 
- 	HS2=$(cat /home/bash/$NAMET2 | grep Kernel | awk '{print $9}' | sed 's/[(]//' | tail --lines=2 | head --lines=1 | awk '{printf("%.2f\n", $1)}' )
+ 	HS2=$(cat $NAMET2 | grep Kernel | awk '{print $9}' | sed 's/[(]//' | tail --lines=2 | head --lines=1 | awk '{printf("%.2f\n", $1)}' )
 	NAME=$(echo "Ist$RUNSLOOP.T2")
 	### This is the time of hash vs current date calculator 
 	### Need variables 
@@ -161,7 +161,7 @@ RUNSLOOP=$GPU
 		echo " there is a $DIFF sec lag on hash check - GPU is sick ! " ###  Here we have declared the GPU sick 
 	
 		 ### ACTION HERE - We have a lag on the miner thread
-		 LINES=$(cat /home/bash/$NAME | wc -l)
+		 LINES=$(cat $NAME | wc -l)
 		
 		 if [ $LINES -gt 150 ] ; then  
 			PID=$(cat $RUNSLOOP.T2PID)
