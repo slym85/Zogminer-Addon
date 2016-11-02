@@ -1,0 +1,2 @@
+# Zogminer-Addon
+Autostart.sh
