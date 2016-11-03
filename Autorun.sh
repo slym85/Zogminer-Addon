@@ -1,4 +1,4 @@
-#!/bin/bash
+ #!/bin/bash
  ### You need script , screen and moreutils - run this :
  ###  sudo apt-get update && sudo apt-get install typescript moreutils screen
 
@@ -84,7 +84,7 @@ RUNSLOOP=$GPU
 
 #####################################################################################################################
  ### For instace one  
-  HS=$(cat $NAMET1 | grep Kernel | awk '{print $9}' | sed 's/[(]//' | tail --lines=2 | head --lines=1 | awk '{printf("%.2f\n", $1)}' )
+
 	NAME=$(echo "Ist$RUNSLOOP.T1")
 	### This is the time of hash vs current date calculator 
 	### Need variables 
@@ -134,7 +134,6 @@ RUNSLOOP=$GPU
 ############################################################################################################################
 
  ### For instance 2 check 
- 	HS2=$(cat $NAMET2 | grep Kernel | awk '{print $9}' | sed 's/[(]//' | tail --lines=2 | head --lines=1 | awk '{printf("%.2f\n", $1)}' )
 	NAME=$(echo "Ist$RUNSLOOP.T2")
 	### This is the time of hash vs current date calculator 
 	### Need variables 
@@ -178,13 +177,5 @@ RUNSLOOP=$GPU
 	sleep 0.1
 
     done ### Done
-    
-    
- ###############################################################################################################################
- 
-
-    
-done ### The script loop 
-
-
+done ### The script loop
 
