@@ -1,0 +1,228 @@
+ #!/bin/bash
+ ### You need script , screen and moreutils - run this :
+ ###  sudo apt-get update && sudo apt-get install typescript moreutils screen
+
+WALLET=$( echo "t1RVpR7U9ZA5SU94tXzEu7sLBtZrBkq4Vrf")  ### YOUR WALLET 
+ ### Input your pool 
+POOL=$(echo '"stratum+tcp://us1-zcash.flypool.org:3333"') ### YOUR POOL - please use the double   '"   and   "'   !!
+
+GPU=6  ### How many GPU's you have 
+
+ ### Maxtime is the maximum lag time allowed before restarting the miner .. 
+ ### Be aware there is some lag from the time the miner executes hashes and the time the script writes it in the file.
+ ### I have a good result with 300 sec
+ 
+MAXTIME=300
+THREADSLEEP=8   	 ### CPU sleep time between threads 
+DONNATE=1   		 ### To enable donations 
+DONNWALLET=$(echo "t1MEUYR6yu9hYQ31ECWmijVwx9R6pAXQSTy")
+ ### If you want to give some love back - Only GPU 0 will mine in this wallet - given your pool needs only a wallet as username
+ ### This is where you want to donate : 
+ 
+	### @omaralvarez
+	### ZEC: t1MEUYR6yu9hYQ31ECWmijVwx9R6pAXQSTy
+
+	### @nginnever
+	### ZEC: t1PGgRgVQ14utsD7mp2dzGdykTDFUCKzPQ5
+
+	### @AgeManning
+	### ZEC: t1MfAaj8YDwiwFb6RAnNtW4EtzvTvkFGBvV
+
+ ############## Script ###################
+SLEEP=$THREADSLEEP
+ZZ=$(echo '"')
+RUNSLOOP=$GPU
+until [  $RUNSLOOP = 0 ]; do
+RUNSLOOP=$(expr $RUNSLOOP - 1 )
+
+  if [ $DONNATE = 1 ] ; then 
+	if [ $RUNSLOOP = 0 ] ; then WALLET=$DONNWALLET ; fi ; fi
+ ### 1rst instance 
+echo " #!/bin/bash
+WALLET=$WALLET
+sleep $SLEEP
+export GPU_SINGLE_ALLOC_PERCENT=100 
+export GPU_MAX_ALLOC_PERCENT=99 
+export GPU_MAX_HEAP_SIZE=100 
+export GPU_USE_SYNC_OBJECTS=1 " > Ist$RUNSLOOP.T1.sh
+echo 'echo $$ > '"$RUNSLOOP.T1PID" >> Ist$RUNSLOOP.T1.sh
+echo " script Ist$RUNSLOOP.T1 -c $ZZ./src/zcash-miner -G -stratum=$POOL  -user=$WALLET.Rig -S=$RUNSLOOP | ts $ZZ
+  " >> Ist$RUNSLOOP.T1.sh
+chmod +x Ist$RUNSLOOP.T1.sh
+screen -dmS Zcash$RUNSLOOP.T1 ./Ist$RUNSLOOP.T1.sh
+ sleep 0.5
+
+ ### Adding sleep time for every other thred 
+ SLEEP=$(expr $SLEEP + $THREADSLEEP )
+ 
+ 
+ ### 2nd instance 
+ if [ $DONNATE = 1 ] ; then 
+	if [ $RUNSLOOP = 0 ] ; then WALLET=$DONNWALLET ; fi ; fi
+ echo " #!/bin/bash
+WALLET=$WALLET 
+sleep $SLEEP
+export GPU_SINGLE_ALLOC_PERCENT=100 
+export GPU_MAX_ALLOC_PERCENT=99 
+export GPU_MAX_HEAP_SIZE=100 
+export GPU_USE_SYNC_OBJECTS=1 " > Ist$RUNSLOOP.T2.sh
+echo 'echo $$ > '"$RUNSLOOP.T2PID" >> Ist$RUNSLOOP.T2.sh
+echo "script Ist$RUNSLOOP.T2 -c $ZZ./src/zcash-miner -G -stratum=$POOL  -user=$WALLET.Rig -S=$RUNSLOOP | ts $ZZ
+ " >> Ist$RUNSLOOP.T2.sh
+chmod +x Ist$RUNSLOOP.T2.sh
+screen -dmS Zcash$RUNSLOOP.T2 ./Ist$RUNSLOOP.T2.sh
+ sleep 0.5
+
+done ### we have built 2 instances per GPU .. moving on ...
+echo " "> Splash
+echo " Threads have been built ... waiting 10 sec to start monitoring" 
+#sleep 55
+echo " Starting monitoring " 
+#sleep 5
+echo " Z-Multi started " >log
+while :
+do
+ ### Entering the script loop
+ #echo " "
+ SICK1=0
+ SICK2=0
+RUNSLOOP=$GPU
+      until [  $RUNSLOOP = 0 ]; do ### Numbering loop 
+      RUNSLOOP=$(expr $RUNSLOOP - 1 )
+      SSICK1=$(echo " ")
+      SSICK2=$(echo " ")
+
+#####################################################################################################################
+ ### For instace one  
+
+	NAME=$(echo "Ist$RUNSLOOP.T1")
+	HS1=$(cat $NAME | tail --lines=2 | head --lines=1 |awk '{print $9}' | sed 's/[(]//' | awk '{printf("%.2f\n", $1)}')
+	### This is the time of hash vs current date calculator 
+	### Need variables 
+	date_a=$(date +"%H:%M:%S") ### This is current time 
+	CAL=$(cat $NAME | tail --lines=4 | grep 'Kernel' |  awk '{print $3}' | tail --lines=1)
+        ### Prototype : Need to see the diff from the timestamp and the date 
+	old=$CAL
+	new=$(date +"%H:%M:%S")
+	#echo " $new - the time "  ### DEBUGG
+	#echo " $old - the timestamp " ### DEBUGG
+	### feeding variables by using read and splitting with IFS
+	IFS=: read old_hour old_min old_sec <<< "$old"
+	IFS=: read hour min sec <<< "$new"
+	### convert hours to minutes and seconds
+	### the 10# is there to avoid errors with leading zeros
+	### by telling bash that we use base 10
+	total_old_minutes=$((10#$old_hour*60 + 10#$old_min*60 + 10#$old_sec))
+	total_minutes=$((10#$hour*60 + 10#$min*60 + 10#$sec))
+	sleep 0.01
+	  DIFF1=$(echo "$((total_minutes - total_old_minutes))")
+	  
+	  ### Added a negative Diff workarround - Nasty but will do
+	  if [ $DIFF1 -lt 0 ] ; then $DIFF1=$(expr $DIFF1 + 3601 ) ; fi
+	  
+	  if [ $DIFF1 -gt $MAXTIME ] ### How many seconds to wait before restarting thread
+	      then 
+		SICK1=1
+		 #echo " ============================= "
+		#echo " GPU $RUNSLOOP :" 
+		#echo " there is a $DIFF1 sec lag on hash check - GPU is sick ! " ###  Here we have declared the GPU sick 
+	
+		### ACTION HERE - We have a lag on the miner thread
+		 LINES=$(cat $NAME | wc -l)
+		
+		 if [ $LINES -gt 150 ] ; then  
+			PID=$(cat $RUNSLOOP.T1PID)
+			kill $PID
+			screen -dmS Zcash$RUNSLOOP.T1 ./Ist$RUNSLOOP.T1.sh
+			echo "$new: Retarted Ist$RUNSLOOP.T1.sh | Reason : Lag found " >> log
+			SSICK1=$(/bin/echo -e "\e[0;31m!_SICK_!\e[1;32m")
+			sleep 0.02
+			else
+			SSICK1=$(/bin/echo -e "\e[0;36m Starting...\e[1;32m")
+			echo "$new: Not restarting GPU $RUNSLOOP T1 | Reason - Not enough data yet" >> log
+			fi
+	      else
+	      SICK1=0
+	      #echo " ============================= "
+		#echo " GPU $RUNSLOOP is OK :" 
+		#echo " Thread 01  the difference is $((total_minutes - total_old_minutes)) sec " ### Normal condition : Hashes are running
+	  fi
+	### Sleep and time here 
+	sleep 0.01
+############################################################################################################################
+
+ ### For instance 2 check 
+	NAME=$(echo "Ist$RUNSLOOP.T2")
+	HS2=$(cat $NAME | tail --lines=2 | head --lines=1 |awk '{print $9}' | sed 's/[(]//' | awk '{printf("%.2f\n", $1)}')
+	### This is the time of hash vs current date calculator 
+	### Need variables 
+	date_a=$(date +"%H:%M:%S") ### This is current time 
+	CAL=$(cat $NAME | tail --lines=4 | grep 'Kernel' |  awk '{print $3}' | tail --lines=1)
+        ### Prototype : Need to see the diff from the timestamp and the date 
+	old=$CAL
+	new=$(date +"%H:%M:%S")
+	#echo " $new - the time "  ### DEBUGG
+	#echo " $old - the timestamp " ### DEBUGG
+	### feeding variables by using read and splitting with IFS
+	IFS=: read old_hour old_min old_sec <<< "$old"
+	IFS=: read hour min sec <<< "$new"
+	### convert hours to minutes and seconds
+	### the 10# is there to avoid errors with leading zeros
+	### by telling bash that we use base 10
+	total_old_minutes=$((10#$old_hour*60 + 10#$old_min*60 + 10#$old_sec))
+	total_minutes=$((10#$hour*60 + 10#$min*60 + 10#$sec))
+	sleep 0.01
+	DIFF2=$(echo "$((total_minutes - total_old_minutes))")
+	
+	### Added a negative Diff workarround - Nasty but will do
+	if [ $DIFF2 -lt 0 ] ; then $DIFF2=$(expr $DIFF2 + 3601 ) ; fi
+	
+	if [ $DIFF2 -gt $MAXTIME ] ### How many seconds to wait before restarting thread
+	      then 
+		SICK2=1
+		 ### ACTION HERE - We have a lag on the miner thread
+		 LINES=$(cat $NAME | wc -l)
+		
+		 if [ $LINES -gt 150 ] ; then  
+			PID=$(cat $RUNSLOOP.T2PID)
+			kill $PID
+			screen -dmS Zcash$RUNSLOOP.T2 ./Ist$RUNSLOOP.T2.sh
+			echo "$new: Retarted Ist$RUNSLOOP.T2.sh | Reason : Lag found " >> log
+			SSICK2=$(/bin/echo -e "\e[0;31m!_SICK_!\e[1;32m")
+			sleep 0.02
+			else
+			SSICK2=$(/bin/echo -e "\e[0;36m Starting...\e[1;32m")
+			echo "$new: Not restarting GPU $RUNSLOOP T2 | Reason - Not enough data yet" >> log
+			fi
+	      else
+	      SICK2=0
+	fi
+	sleep 0.01
+
+	    ### Added CLI
+
+      	if [ $RUNSLOOP = $GPU ] ; then
+	/bin/echo -e "\033[1;97m GPU $RUNSLOOP : Thread 1 H/s= $HS1  T=$DIFF1 \e[1;32m$SSICK1
+	 Thread 2 H/s= $HS2  L=$DIFF2 \e[0;31m$SSICK2\e[0m "> Splash
+	else 
+	/bin/echo -e "\033[1;97m GPU $RUNSLOOP : Thread 1 H/s= $HS1  T=$DIFF1 \e[1;32m$SSICK1
+	 Thread 2 H/s= $HS2  L=$DIFF2 \e[0;31m$SSICK2\e[0m ">> Splash ; fi
+	
+    done ### Done
+    
+    
+    ### Printing part 
+ echo " " && echo " " && echo " "
+  echo " " && echo " " && echo " "
+   echo " " && echo " " && echo " "
+    echo " =========== Zogminer-Addon V a0.2 ============= "
+    cat Splash
+    echo " "
+    echo " =================== log ======================= "
+    tail --lines=10 log
+    sleep 3
+    echo " " > Splash
+    
+    
+done ### The script loop
+
