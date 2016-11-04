@@ -50,7 +50,7 @@ echo " script Ist$RUNSLOOP.T1 -c $ZZ./src/zcash-miner -G -stratum=$POOL  -user=$
   " >> Ist$RUNSLOOP.T1.sh
 chmod +x Ist$RUNSLOOP.T1.sh
 screen -dmS Zcash$RUNSLOOP.T1 ./Ist$RUNSLOOP.T1.sh
- sleep 0.5
+ sleep 2
 
  ### Adding sleep time for every other thred 
  SLEEP=$(expr $SLEEP + $THREADSLEEP )
@@ -71,14 +71,14 @@ echo "script Ist$RUNSLOOP.T2 -c $ZZ./src/zcash-miner -G -stratum=$POOL  -user=$W
  " >> Ist$RUNSLOOP.T2.sh
 chmod +x Ist$RUNSLOOP.T2.sh
 screen -dmS Zcash$RUNSLOOP.T2 ./Ist$RUNSLOOP.T2.sh
- sleep 0.5
+ sleep 2
 
 done ### we have built 2 instances per GPU .. moving on ...
 echo " "> Splash
 echo " Threads have been built ... waiting 10 sec to start monitoring" 
-#sleep 55
+sleep 10
 echo " Starting monitoring " 
-#sleep 5
+sleep 5
 echo " Z-Multi started " >log
 while :
 do
@@ -114,7 +114,7 @@ RUNSLOOP=$GPU
 	### by telling bash that we use base 10
 	total_old_minutes=$((10#$old_hour*60 + 10#$old_min*60 + 10#$old_sec))
 	total_minutes=$((10#$hour*60 + 10#$min*60 + 10#$sec))
-	sleep 0.01
+	sleep 0.2
 	  DIFF1=$(echo "$((total_minutes - total_old_minutes))")
 	  
 	  ### Added a negative Diff workarround - Nasty but will do
@@ -148,7 +148,7 @@ RUNSLOOP=$GPU
 		#echo " Thread 01  the difference is $((total_minutes - total_old_minutes)) sec " ### Normal condition : Hashes are running
 	  fi
 	### Sleep and time here 
-	sleep 0.01
+	sleep 0.2
 ############################################################################################################################
 
  ### For instance 2 check 
@@ -171,7 +171,7 @@ RUNSLOOP=$GPU
 	### by telling bash that we use base 10
 	total_old_minutes=$((10#$old_hour*60 + 10#$old_min*60 + 10#$old_sec))
 	total_minutes=$((10#$hour*60 + 10#$min*60 + 10#$sec))
-	sleep 0.01
+	sleep 0.2
 	DIFF2=$(echo "$((total_minutes - total_old_minutes))")
 	
 	### Added a negative Diff workarround - Nasty but will do
@@ -197,7 +197,7 @@ RUNSLOOP=$GPU
 	      else
 	      SICK2=0
 	fi
-	sleep 0.01
+	sleep 0.2
 
 	    ### Added CLI
 
@@ -220,7 +220,7 @@ RUNSLOOP=$GPU
     echo " "
     echo " =================== log ======================= "
     tail --lines=10 log
-    sleep 3
+    sleep 4
     echo " " > Splash
     
     
